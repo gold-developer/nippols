@@ -1,8 +1,8 @@
 # Open NIPPO
 
-NIPPOLS - NIPPO Less Stress
+Open NIPPO
 
-NIPPOLS aims to be a very handy tool your team and project by bringing the things you need in one place: 
+Open NIPPO aims to be a very handy tool your team and project by bringing the things you need in one place: 
 tasks, communication, files, notes, calendar and more
 
 This project was built using the following technologies:
