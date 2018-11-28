@@ -1,8 +1,8 @@
-# NIPPOLS
+# Open NIPPO
 
 NIPPOLS - NIPPO Less Stress
 
-NIPPOLS aims to be the only management tool your team needs by bringing the things you need in one place: 
+NIPPOLS aims to be a very handy tool your team and project by bringing the things you need in one place: 
 tasks, communication, files, notes, calendar and more
 
 This project was built using the following technologies:
@@ -19,6 +19,8 @@ These instructions will get you a copy of the project up and running on your loc
 See deployment for notes on how to deploy the project on a live system.
 
 ### Install and Deploy!
+
+(This project is still far from complete. Production setup/build is not yet available.)
 
 Clone this repository
 
