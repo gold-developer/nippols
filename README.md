@@ -3,7 +3,7 @@
 Open NIPPO
 
 Open NIPPO aims to be a very handy tool your team and project by bringing the things you need in one place: 
-tasks, communication, files, notes, calendar and more
+tasks and time-tracking, communication, files, notes, calendar and more...
 
 This project was built using the following technologies:
  - Sails.js (Node.js Backend Web Framework)
