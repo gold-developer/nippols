@@ -7,7 +7,7 @@ import TaskList from './TaskList';
 import TeamList from './TeamList';
 import Announcements from './Announcements';
 
-import CustomRequests from '../../_utilities/customRequests';
+import DashboardRequests from './helper/DashboardRequests';
 
 const styles = {
   flex: { display: 'flex' },
@@ -27,7 +27,7 @@ class DashboardComponent extends React.Component {
   }
 
   componentDidMount() {
-    CustomRequests.getTasksForThisWeek(tasks => this.onTasksReceived(tasks));
+    DashboardRequests.getTasksForThisWeek(tasks => this.onTasksReceived(tasks));
   }
 
   onTasksReceived = (tasks) => {

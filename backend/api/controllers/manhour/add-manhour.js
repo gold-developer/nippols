@@ -1,6 +1,6 @@
 
 const ACTIONS = {
-  REPLACE: 'REPLACE',
+  UPDATE: 'UPDATE',
   ADD: 'ADD'
 };
 
@@ -65,7 +65,7 @@ module.exports = {
       manhour = tempResult[0];
       if (inputs.action === ACTIONS.ADD) {
         manhour.numberOfMinutes += inputs.numberOfMinutes;
-      } else if (inputs.action == ACTIONS.REPLACE) {
+      } else if (inputs.action == ACTIONS.UPDATE) {
         manhour.numberOfMinutes = inputs.numberOfMinutes;
       }
       

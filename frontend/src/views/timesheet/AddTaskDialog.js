@@ -16,17 +16,34 @@ class FormDialog extends React.Component {
     super(props);
 
     this.state = {
-      checked: [0],
+      checked: [],
     }
-
+  
   }
 
   componentDidMount() {
 
   }
 
-  handleClose = () => {
-    this.props.onDialogExit();
+  handleCancel = () => {
+    this.props.onDialogExit([]);
+  }
+
+  updateCheckedState = (checked) => {
+    this.setState({checked});
+  }
+
+  handleSubmit = () => {
+    let selectedTasks = [];
+    let checkedIndex = this.state.checked;
+    let allTasks;
+
+    for(let i = 0; i < this.state.checked.length; i++) {
+      selectedTasks.push(this.state.checked[i]);
+    }
+
+    this.updateCheckedState([]);
+    this.props.onDialogExit(selectedTasks);
   }
 
   handleToggle = value => () => {
@@ -40,9 +57,7 @@ class FormDialog extends React.Component {
       newChecked.splice(currentIndex, 1);
     }
 
-    this.setState({
-      checked: newChecked,
-    });
+    this.updateCheckedState(newChecked);
   }
 
   render() {
@@ -86,11 +101,11 @@ class FormDialog extends React.Component {
 
         </DialogContent>
         <DialogActions>
-          <Button onClick={this.handleClose} color="primary">
+          <Button onClick={this.handleCancel} color="primary">
             Cancel
           </Button>
-          <Button onClick={this.handleClose} color="primary">
-            Add Tasks
+          <Button onClick={this.handleSubmit} color="primary">
+            Submit
           </Button>
         </DialogActions>
       </Dialog>

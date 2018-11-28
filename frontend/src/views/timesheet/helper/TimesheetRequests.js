@@ -1,9 +1,9 @@
 
 import { GET_LIST, CREATE } from 'react-admin';
-import { TASK_STATUS } from '../../_utilities/constants';
-import restClient from '../../_utilities/dataProvider';
+import { TASK_STATUS } from '../../../_utilities/constants';
+import restClient from '../../../_utilities/dataProvider';
 
-class CustomRequests {
+class TimesheetRequests {
 
   /**
    * getTasksForThisWeek is used when listing tasks that the user can add manhours on the current active week. 
@@ -81,11 +81,11 @@ class CustomRequests {
   }
 
   static updateTaskMinutes(minutes, task, date, resolve) {
-    CustomRequests._setTaskMinutes(minutes, task, date, 'UPDATE', resolve);
+    TimesheetRequests._setTaskMinutes(minutes, task, date, 'UPDATE', resolve);
   }
 
   static addTaskMinutes(minutes, task, date, resolve) {
-    CustomRequests._setTaskMinutes(minutes, task, date, 'ADD', resolve);
+    TimesheetRequests._setTaskMinutes(minutes, task, date, 'ADD', resolve);
   }
 
   static _setTaskMinutes(minutes, task, date, action, resolve) {
@@ -112,4 +112,4 @@ class CustomRequests {
   }
 }
 
-export default CustomRequests;
+export default TimesheetRequests;

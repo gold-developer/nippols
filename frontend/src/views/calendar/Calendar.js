@@ -10,28 +10,19 @@ import events from './events';
 import 'react-big-calendar/lib/css/react-big-calendar.css';
 
 let allViews = Object.keys(BigCalendar.Views).map(k => BigCalendar.Views[k])
-BigCalendar.momentLocalizer(moment);
+const localizer = BigCalendar.momentLocalizer(moment);
 
 class Calendar extends React.Component {
-
   render () {
     return (
       <Card>
         <CardHeader title="Calendar" />
         <CardContent style={{height: '70vh'}}>
           <BigCalendar
-            selectable
-            {...this.props}
+            localizer={localizer}
             events={events}
-            views={allViews}
-            step={60}
-            defaultDate={new Date(2017, 11, 19)}
-            onSelectEvent={event => alert(event.title)}
-            onSelectSlot={(slotInfo) => alert(
-              `selected slot: \n\nstart ${slotInfo.start.toLocaleString()} ` +
-              `\nend: ${slotInfo.end.toLocaleString()}` +
-              `\naction: ${slotInfo.action}`
-            )}
+            startAccessor="start"
+            endAccessor="end"
           />
         </CardContent>
       </Card>

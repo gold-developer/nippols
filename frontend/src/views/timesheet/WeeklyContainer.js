@@ -1,5 +1,6 @@
 
 import React from 'react';
+import { Link } from 'react-router-dom';
 import PropTypes from 'prop-types';
 import Grid from '@material-ui/core/Grid';
 import { withStyles } from '@material-ui/core/styles';
@@ -7,14 +8,14 @@ import { Divider } from '@material-ui/core';
 import Typography from '@material-ui/core/Typography';
 import Paper from '@material-ui/core/Paper';
 
-import DatePicker from '../../components/react-date-picker/dist/entry';
+import DatePicker from 'react-date-picker';
 import WeekToolbar from './WeekToolbar';
 import TimeInput from './TimeInput';
 
 import AddTaskDialog from './AddTaskDialog';
 
-import CustomRequests from '../../_utilities/customRequests';
-
+import TimesheetRequests from './helper/TimesheetRequests';
+import WeekUtility from './helper/WeekUtility';
 
 const styles = theme => ({
   root: {
@@ -22,7 +23,7 @@ const styles = theme => ({
     padding: 8*3,
   },
   paper: {
-    padding: 6,
+    padding: 10,
     textAlign: 'left',
     align: 'left',
     color: theme.palette.text.secondary,
@@ -57,22 +58,6 @@ const styles = theme => ({
   }
 });
 
-const dayLabels = [
-  "Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"
-];
-
-const numberOfDays = [
-  31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31
-];
-
-const isLeapYear = (year) => {
-  return !(year % 4) && (year % 100) || !(year % 400);
-};
-
-const getDay = (date) => {
-  return date.getDay() - 1 < 0 ? 6: date.getDay() - 1;
-}
-
 class WeeklyContainer extends React.Component {
   constructor(props) {
     super(props);
@@ -80,13 +65,13 @@ class WeeklyContainer extends React.Component {
     let baseDate = new Date();
     baseDate.setHours(0,0,0,0);
 
-    let baseWeekDates = this.getWeekDates(baseDate);
+    let baseWeekDates = WeekUtility.getWeekDates(baseDate);
 
     this.taskMinutes = [];
 
     this.state = {
       dateToday: baseDate,
-      date: baseDate,
+      selectedDate: baseDate,
       weekDates: baseWeekDates,
       tasks: [],
       taskMinutes: [],
@@ -97,25 +82,15 @@ class WeeklyContainer extends React.Component {
   }
 
   componentDidMount() {
-    CustomRequests.getTasksForThisWeek(tasks => this.onTasksReceived(tasks));
+    TimesheetRequests.getTasksForThisWeek(tasks => this.onTasksReceived(tasks));
   }
 
   componentWillUnmount() {
     this.taskMinutes.splice(0, this.taskMinutes.length);
   }
 
-  isSameWeekAsToday = () => {
-    for(let i = 0; i < this.state.weekDates.length; i++) {
-      if (this.state.dateToday.getTime() === this.state.weekDates[i].getTime()) {
-        return true;
-      }
-    }
-
-    return false;
-  }
-
   onUpdateTaskMinutesStateCompleted = () => {
-
+    
   }
 
   updateTaskMinutesState = (taskMinutes) => {
@@ -124,7 +99,7 @@ class WeeklyContainer extends React.Component {
 
   updateTaskMinutesValue = (minutes, row) => {
     minutes.map((entry, index) => {
-      let day = getDay(new Date(entry.intendedDate));
+      let day = WeekUtility.getDay(new Date(entry.intendedDate));
       this.taskMinutes[(row * 7) + day] = entry.numberOfMinutes;
 
       if (index === (minutes.length - 1)) {
@@ -133,7 +108,7 @@ class WeeklyContainer extends React.Component {
     });
   }
 
-  onTaskOthersReceived = (taskOthers) => {
+  onTasksToAddReceived = (taskOthers) => {
     // remove those already in tasks[]
     for (let othersIdx = taskOthers.length - 1; othersIdx > 0; othersIdx--) {
       let found = false;
@@ -160,8 +135,8 @@ class WeeklyContainer extends React.Component {
 
   onUpdateTasksStateCompleted = () => {
     // TODO: maybe move this on dialog window show
-    CustomRequests.getTasksToAddForTimesheet(this.state.weekDates[6],
-      taskOthers => this.onTaskOthersReceived(taskOthers));
+    TimesheetRequests.getTasksToAddForTimesheet(this.state.weekDates[6],
+      taskOthers => this.onTasksToAddReceived(taskOthers));
   }
 
   updateTasksState = (tasks) => {
@@ -180,7 +155,7 @@ class WeeklyContainer extends React.Component {
       }
   
       tasks.map((task, index) => {
-        CustomRequests.getTaskMinutesForDates(
+        TimesheetRequests.getTaskMinutesForDates(
           task.id, startDate, endDate, minutes => {
             this.updateTaskMinutesValue(minutes, index);
   
@@ -198,48 +173,23 @@ class WeeklyContainer extends React.Component {
   }
 
   updateTasksAccdgToDate = () => {
-    if (this.isSameWeekAsToday()) {
-      CustomRequests.getTasksForThisWeek(
+    if (WeekUtility.isDateWithinWeek(this.state.dateToday, this.state.weekDates)) {
+      TimesheetRequests.getTasksForThisWeek(
         tasks => this.onTasksReceived(tasks)
       );
     } else {
-      CustomRequests.getTasksForSpecificDates(this.state.weekDates[0], this.state.weekDates[6],
+      TimesheetRequests.getTasksForSpecificDates(this.state.weekDates[0], this.state.weekDates[6],
         tasks => this.onTasksReceived(tasks));
     }
   }
 
-  getWeekDates = (date) => {
-    let oneDay = 1000 * 60 * 60 * 24;
-    let year = date.getFullYear();
-    numberOfDays[1] = isLeapYear(year) ? 29: 28;
-
-    let selectedDay = getDay(date);
-    let weekDates = [];
-
-    let dateAsInteger = date.getTime();
-
-    for (let before = 0; before < selectedDay; before++) {
-      let tempDate = new Date(dateAsInteger - ((selectedDay - before) * oneDay));
-      weekDates.push(tempDate);
-    }
-
-    weekDates.push(date);
-
-    for (let after = selectedDay + 1; after < 7; after++) {
-      let tempDate = new Date(dateAsInteger + ((after - selectedDay) * oneDay));
-      weekDates.push(tempDate);
-    }
-
-    return weekDates;
-  }
-
   onUpdateDateStateCompleted = () => {
-    let weekDates = this.getWeekDates(this.state.date);
+    let weekDates = WeekUtility.getWeekDates(this.state.selectedDate);
     this.setState({weekDates}, () => this.updateTasksAccdgToDate());
   }
 
-  updateDateState = (date) => {
-    this.setState({date}, () => this.onUpdateDateStateCompleted());
+  updateDateState = (selectedDate) => {
+    this.setState({selectedDate}, () => this.onUpdateDateStateCompleted());
   }
 
   onCalendarChange = (date) => {
@@ -266,7 +216,7 @@ class WeeklyContainer extends React.Component {
         let taskIndex = Math.floor(index / 7);
         let task = this.state.tasks[taskIndex];
 
-        CustomRequests.updateTaskMinutes(minutes, task.id, this.state.weekDates[dayIndex]);
+        TimesheetRequests.updateTaskMinutes(minutes, task.id, this.state.weekDates[dayIndex]);
       }
     });
   }
@@ -275,8 +225,22 @@ class WeeklyContainer extends React.Component {
     this.setState({taskAddOpen: true});
   }
 
-  onAddTaskDialogExit = () => {
+  onAddTaskDialogExit = (tasksToAdd) => {
     this.setState({taskAddOpen: false});
+
+    let currentTasks = [];
+    Array.prototype.push.apply(currentTasks, this.state.tasks);
+    Array.prototype.push.apply(currentTasks, tasksToAdd);
+
+    currentTasks.forEach(task => {
+      console.log(`${task.name}, `);
+    });
+  
+    this.updateTasksState(currentTasks);
+
+    // tasksToAdd.forEach(task => {
+    //   TimesheetRequests.addTaskMinutes(0, task.id, this.state.weekDates[0]);
+    // });
   }
 
   render() {
@@ -294,7 +258,7 @@ class WeeklyContainer extends React.Component {
           </Grid>
           <Grid item xs={4}>
             <Paper className={classes.paper} elevation={0} square>
-              <DatePicker clearIcon={null} onChange={this.onCalendarChange} value={this.state.date} />
+              <DatePicker clearIcon={null} onChange={this.onCalendarChange} value={this.state.selectedDate} />
             </Paper>
           </Grid>
         </Grid>
@@ -304,7 +268,8 @@ class WeeklyContainer extends React.Component {
     const weeklyHeader = () => {
 
       const headerDayColumn = (date, index) => {
-        let dayLabel = dayLabels[getDay(date)];
+        let labels = WeekUtility.getDayLabels();
+        let dayLabel = labels[WeekUtility.getDay(date)];
         let dateLabel = date.getDate();
         return (
           <Grid item xs={1} key={index}>
@@ -339,10 +304,14 @@ class WeeklyContainer extends React.Component {
       );
     }
 
-    const taskNameCell = (taskName) => {
+    const taskNameCell = (task) => {
       return (
         <Paper className={classes.paper} elevation={0} square>
-          <Typography>{taskName}</Typography>
+          <Link 
+            to={`/task/${task.id}`}
+          >
+            {task.name}
+          </Link>
         </Paper>
       );
     }
@@ -355,18 +324,16 @@ class WeeklyContainer extends React.Component {
 
     const taskRow = (task, row) => {
 
-      let cols = [0, 1, 2, 3, 4, 5, 6];
-
       return (
         <div key={row}>
           <Grid container>
             <Grid item xs={5}>
               <Paper className={classes.paperRow} elevation={0} square>
-                {taskNameCell(task.name)}
+                {taskNameCell(task)}
               </Paper>
             </Grid>
             {
-              cols.map((col, index) => {
+              [0, 1, 2, 3, 4, 5, 6].map((col, index) => {
                 return (
                   <Grid item xs={1} key={index}>
                     <Paper className={classes.paperRow} elevation={0} square>
